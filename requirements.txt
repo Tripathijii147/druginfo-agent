@@ -1,0 +1,10 @@
+requests>=2.31
+python-dotenv>=1.0
+langchain-core>=0.3
+langchain-text-splitters>=0.3
+langchain-chroma>=0.2
+langchain-huggingface>=0.1
+langchain-groq>=0.2
+langgraph>=0.2
+sentence-transformers>=3.0
+streamlit>=1.36

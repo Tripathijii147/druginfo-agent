@@ -1,0 +1,151 @@
+question,expected_drug,expected_section,source_hit,refused,faithful,answer
+What are the contraindications of lisinopril?,lisinopril,Contraindications,True,False,YES,"Contraindications of lisinopril include:  
+- Angioedema or a history of hereditary or idiopathic angioedema [lisinopril | Contraindications].  
+- Hypersensitivity to lisinopril or related ACE inhibitors [lisinopril | Contraindications].  
+- Co‑administration of aliskiren with lisinopril in patients with diabetes [lisinopril | Contraindications].  
+- Combination with a neprilysin inhibitor (e.g., sacubitril) or switching to/from sacubitril/valsartan within 36 hours [lisinopril | Contraindications].  
+- History of angioedema or hypersensitivity related to previous ACE‑inhibitor treatment [lisinopril | Contraindications]."
+What are common side effects of lisinopril?,lisinopril,Adverse Reactions,True,False,YES,"Common side effects of lisinopril include headache, dizziness, cough, hypotension, and chest pain. [lisinopril | Adverse Reactions] 6.1"
+Who should not take metformin?,metformin,Contraindications,True,False,YES,"Patients who should not take metformin include those with:
+
+- Severe renal impairment (eGFR below 30 mL/min/1.73 m²) [metformin | Contraindications]  
+- Hypersensitivity to metformin [metformin | Contraindications]  
+- Acute or chronic metabolic acidosis, including diabetic ketoacidosis, with or without coma [metformin | Contraindications]"
+What is metformin used to treat?,metformin,Indications and Usage,True,False,YES,Metformin is used as an adjunct to diet and exercise to improve glycemic control in adults with type 2 diabetes mellitus. [metformin | Indications and Usage]
+Which drugs interact with warfarin?,warfarin,Drug Interactions,True,False,YES,"Drugs that can interact with warfarin include:
+
+- **Caffeine, cimetidine, ciprofloxacin, disulfiram, enoxacin, famotidine, fluvoxamine, methoxsalen, mexiletine, norfloxacin, oral contraceptives, phenylpropanolamine, propafenone, propranolol, terbinafine, thiabendazole, ticlopidine, verapamil, zileuton, montelukast, moricizine, omeprazole, phenobarbital, phenytoin, cigarette smoking**【warfarin | Drug Interactions】  
+- **CYP3A4 inhibitors/inducers such as alprazolam, amiodarone, amlodipine, amprenavir, aprepitant, atorvastatin, atazanavir, bicalutamide, cilostazol, clarithromycin, conivaptan, cyclosporine, darunavir/ritonavir, diltiazem, erythromycin, fluconazole, fluoxetine, fluvoxamine, fosamprenavir, imatinib, indinavir, isoniazid, itraconazole, ketoconazole, lopinavir/ritonavir, nefazodone, nelfinavir, nilotinib, posaconazole, ranitidine, ranolazine**【warfarin | Drug Interactions】  
+- **Other classes that may increase bleeding risk or alter warfarin metabolism: antibiotics, antifungals, botanical (herbal) products, and inhibitors or inducers of CYP2C9, CYP1A2, or CYP3A4**【warfarin | Drug Interactions】"
+What conditions is warfarin indicated for?,warfarin,Indications and Usage,False,False,YES,"Warfarin is indicated for long‑term anticoagulation in patients with non‑valvular atrial fibrillation who are at high or intermediate risk of ischemic stroke (e.g., prior stroke/TIA, systemic embolism, age >75 yr, heart failure, hypertension, or diabetes)【warfarin | Dosage and Administration】."
+What is atorvastatin prescribed for?,atorvastatin,Indications and Usage,True,False,YES,"Atorvastatin is prescribed to:
+
+- Reduce the risk of myocardial infarction (MI), stroke, revascularization procedures, and angina in adults with multiple risk factors for coronary heart disease (CHD) but without clinically evident CHD [atorvastatin | Indications and Usage].
+- Reduce the risk of MI and stroke in adults with type 2 diabetes mellitus who have multiple risk factors for CHD but no clinically evident CHD [atorvastatin | Indications and Usage].
+- Reduce the risk of non‑fatal MI, fatal and non‑fatal stroke, revascularization procedures, hospitalization for congestive heart failure, and angina in adults with clinically evident CHD [atorvastatin | Indications and Usage].
+- Serve as an adjunct to diet to lower low‑density lipoprotein cholesterol (LDL‑C) in adults with primary hyperlipidemia [atorvastatin | Indications and Usage].
+- Lower LDL‑C in adults and pediatric patients aged 10 years and older with heterozygous familial hypercholesterolemia (HeFH) [atorvastatin | Indications and Usage].
+- Lower LDL‑C in adults and pediatric patients aged 10 years and older with homozygous familial hypercholesterolemia (HoFH) as an adjunct to other LDL‑C‑lowering therapies or alone if such treatments are unavailable [atorvastatin | Indications and Usage].
+- Treat adults with primary dysbetalipoproteinemia or hypertriglyceridemia as an adjunct to diet [atorvastatin | Indications and Usage]."
+What drug interactions does atorvastatin have?,atorvastatin,Drug Interactions,True,False,NO,"Atorvastatin interacts with several drugs and substances that can increase its plasma concentration or the risk of myopathy and rhabdomyolysis.  
+- Grapefruit juice increases the risk of myopathy and rhabdomyolysis. [atorvastatin | Drug Interactions]  
+- Rifampin may reduce atorvastatin plasma concentrations. [atorvastatin | Drug Interactions]  
+- Oral contraceptives may increase plasma levels of norethindrone and ethinyl estradiol. [atorvastatin | Drug Interactions]  
+- Digoxin may have increased plasma levels when taken with atorvastatin. [atorvastatin | Drug Interactions]  
+- Cyclosporine (an inhibitor of CYP3A4 and OATP1B1) significantly increases atorvastatin plasma levels. [atorvastatin | Drug Interactions]  
+- Gemfibrozil (an inhibitor of CYP3A4 and OATP1B1) also increases atorvastatin plasma levels. [atorvastatin | Drug Interactions]"
+What is amlodipine used for?,amlodipine,Indications and Usage,True,False,YES,"Amlodipine is used to treat hypertension in adults and children 6 years and older, lowering blood pressure to reduce cardiovascular risk【amlodipine | Indications and Usage】. It is also indicated for coronary artery disease, including chronic stable angina, vasospastic (Prinzmetal’s) angina, and angiographically documented coronary artery disease in patients without heart failure or an ejection fraction <40%【amlodipine | Indications and Usage】."
+What adverse reactions were reported with amlodipine?,amlodipine,Adverse Reactions,True,False,YES,"Adverse reactions reported with amlodipine include edema, dizziness, flushing, palpitation, fatigue, nausea, and somnolence.  
+[amlodipine | Adverse Reactions]"
+When is losartan contraindicated?,losartan,Contraindications,True,False,YES,Losartan is contraindicated in patients who are hypersensitive to any component of the product and when it is co‑administered with aliskiren in patients with diabetes. [losartan | Contraindications]
+What is losartan indicated for?,losartan,Indications and Usage,True,False,YES,"Losartan potassium tablet is indicated for:  
+- Treatment of hypertension in adults and pediatric patients 6 years of age and older【losartan | Indications and Usage】.  
+- Reduction of the risk of stroke in patients with hypertension and left ventricular hypertrophy (benefit not shown in Black patients)【losartan | Indications and Usage】.  
+- Treatment of diabetic nephropathy with an elevated serum creatinine and proteinuria in patients with type 2 diabetes and a history of hypertension【losartan | Indications and Usage】."
+What conditions does omeprazole treat?,omeprazole,Indications and Usage,True,False,YES,"Omeprazole is indicated for the following conditions:  
+- Active duodenal ulcer in adults [omeprazole | Indications and Usage]  
+- Eradication of Helicobacter pylori to reduce the risk of duodenal ulcer recurrence in adults [omeprazole | Indications and Usage]  
+- Active benign gastric ulcer in adults [omeprazole | Indications and Usage]  
+- Symptomatic gastroesophageal reflux disease (GERD) in patients 2 years of age and older [omeprazole | Indications and Usage]  
+- Maintenance of healing of erosive esophagitis (EE) due to acid‑mediated GERD in patients 2 years of age and older [omeprazole | Indications and Usage]  
+- Pathologic hypersecretory conditions in adults (e.g., Zollinger‑Ellison syndrome, multiple endocrine adenomas, systemic mastocytosis) [omeprazole | Indications and Usage]"
+What medicines interact with omeprazole?,omeprazole,Drug Interactions,True,False,YES,"Medicines that have clinically relevant interactions with omeprazole include antiretroviral drugs such as rilpivirine, atazanavir, nelfinavir, and saquinavir. Rilpivirine-containing products are contraindicated with omeprazole, while atazanavir and nelfinavir should be avoided when omeprazole is used. Saquinavir exposure may increase, raising the risk of toxicity. [omeprazole | Drug Interactions]"
+What infections is amoxicillin used for?,amoxicillin,Indications and Usage,True,False,YES,"Amoxicillin is indicated for the treatment of infections due to susceptible strains of designated microorganisms, including:
+
+- Upper‑respiratory‑tract infections (ear, nose, and throat)【amoxicillin | Indications and Usage】  
+- Genitourinary‑tract infections【amoxicillin | Indications and Usage】  
+- Skin and skin‑structure infections【amoxicillin | Indications and Usage】  
+- Lower‑respiratory‑tract infections【amoxicillin | Indications and Usage】  
+- Helicobacter pylori infection and duodenal ulcer disease【amoxicillin | Indications and Usage】"
+Who should not take amoxicillin?,amoxicillin,Contraindications,True,False,YES,"Patients who have had a serious hypersensitivity reaction (e.g., anaphylaxis or Stevens‑Johnson syndrome) to amoxicillin or to other β‑lactam antibacterial drugs (penicillins or cephalosporins) should not take amoxicillin. [amoxicillin | Contraindications]"
+What is azithromycin indicated for?,azithromycin,Indications and Usage,True,False,YES,"Azithromycin is indicated for the treatment of mild to moderate infections caused by susceptible bacteria, including:  
+- Acute bacterial exacerbations of chronic bronchitis in adults [azithromycin | Indications and Usage]  
+- Acute bacterial sinusitis in adults [azithromycin | Indications and Usage]  
+- Uncomplicated skin and skin structure infections in adults [azithromycin | Indications and Usage]  
+- Urethritis and cervicitis in adults [azithromycin | Indications and Usage]  
+- Genital ulcer disease in men [azithromycin | Indications and Usage]  
+- Acute otitis media [azithromycin | Indications and Usage]"
+What are the serious warnings for ciprofloxacin?,ciprofloxacin,Warnings and Precautions,True,False,YES,"Serious warnings for ciprofloxacin include:
+
+- Not for injection into the eye.  
+- Serious and occasionally fatal hypersensitivity (anaphylactic) reactions, some occurring after the first dose, have been reported in patients receiving systemic quinolone therapy. These reactions may involve cardiovascular collapse, loss of consciousness, tingling, pharyngeal or facial edema, dyspnea, urticaria, and itching.  
+- Only a few patients had a history of hypersensitivity reactions.  
+- Serious anaphylactic reactions require immediate emergency treatment with epinephrine and other resuscitation measures, including oxygen, intravenous fluids, intravenous antihistamines, corticosteroids, pressor amines, and airway management as clinically indicated.  
+- Remove contact lenses before using.  
+
+[ciprofloxacin | Warnings and Precautions]"
+What are the contraindications of sertraline?,sertraline,Contraindications,True,False,YES,"Contraindications of sertraline hydrochloride tablets are:
+
+- Concomitant use of monoamine oxidase inhibitors (MAOIs) or use within 14 days of stopping MAOIs, including linezolid and intravenous methylene blue, because of an increased risk of serotonin syndrome [sertraline | Contraindications].
+- Concomitant use of pimozide [sertraline | Contraindications].
+- Known hypersensitivity to sertraline (e.g., anaphylaxis, angioedema) or to excipients [sertraline | Contraindications]."
+What drugs interact with sertraline?,sertraline,Drug Interactions,True,False,YES,"Drugs that interact with sertraline include:  
+- Other serotonergic agents (SSRIs, SNRIs, triptans, tricyclic antidepressants, opioids, lithium, tryptophan, buspirone, amphetamines, St. John’s Wort) [sertraline | Drug Interactions].  
+- Antiplatelet agents and anticoagulants, which can increase bleeding risk [sertraline | Drug Interactions].  
+- Protein‑bound drugs such as warfarin, requiring dose monitoring or adjustment [sertraline | Drug Interactions].  
+- Drugs that are CYP2D6 substrates, which may need dose reduction when taken with sertraline [sertraline | Drug Interactions].  
+- Monoamine oxidase inhibitors (MAOIs), for which sertraline is contraindicated due to serotonin‑syndrome risk [sertraline | Drug Interactions]."
+What is alprazolam prescribed for?,alprazolam,Indications and Usage,True,False,YES,"Alprazolam is prescribed for the acute treatment of generalized anxiety disorder (GAD) in adults and for the treatment of panic disorder (PD), with or without agoraphobia, in adults. [alprazolam | Indications and Usage]"
+What drugs interact with alprazolam?,alprazolam,Drug Interactions,True,False,YES,"Drugs that interact with alprazolam include:
+
+- **Opioids** (e.g., morphine, buprenorphine, hydromorphone, oxymorphone, oxycodone, fentanyl, methadone, alfentanil, butorpenol, codeine) – increase risk of respiratory depression【alprazolam | Drug Interactions】  
+- **Other CNS depressants** – produce additive CNS depressant effects【alprazolam | Drug Interactions】  
+- **Digoxin** – increases risk of digoxin toxicity【alprazolam | Drug Interactions】  
+- **CYP3A inhibitors** (except ritonavir) – increase risk of adverse reactions of alprazolam【alprazolam | Drug Interactions】  
+- **CYP3A inducers** – increase risk of reduced efficacy of alprazolam【alprazolam | Drug Interactions】"
+When should tramadol not be used?,tramadol,Contraindications,True,False,YES,"Tramadol should not be used in the following situations:  
+- All children younger than 12 years of age. [tramadol | Contraindications]  
+- Post‑operative management in children younger than 18 years of age following tonsillectomy and/or adenoidectomy. [tramadol | Contraindications]  
+- Patients with significant respiratory depression. [tramadol | Contraindications]  
+- Acute or severe bronchial asthma in an unmonitored setting or in the absence of resuscitative equipment. [tramadol | Contraindications]  
+- Known or suspected gastrointestinal obstruction, including paralytic ileus. [tramadol | Contraindications]  
+- Hypersensitivity to tramadol (e.g., anaphylaxis). [tramadol | Contraindications]  
+- Use of a dose exceeding 300 mg per day. [tramadol | Dosage and Administration]  
+- Concomitant use with other tramadol products. [tramadol | Dosage and Administration]"
+What is gabapentin used to treat?,gabapentin,Indications and Usage,True,False,YES,Gabapentin is indicated for the management of postherpetic neuralgia in adults and as adjunctive therapy for partial‑onset seizures (with or without secondary generalization) in adults and pediatric patients 3 years and older with epilepsy. [gabapentin | Indications and Usage]
+What are the side effects of gabapentin?,gabapentin,Adverse Reactions,True,False,YES,"Side effects reported for gabapentin include:
+
+- Nystagmus, tremor, dysarthria, amnesia, depression, abnormal thinking, abnormal coordination, pharyngitis, coughing, skin abrasion, impotence, diplopia, and amblyopia [gabapentin | Adverse Reactions]  
+- Anaphylaxis and angioedema (difficulty breathing, swelling of lips/throat/tongue, hypotension) [gabapentin | Warnings and Precautions]  
+- Impaired driving or operating heavy machinery until the patient can assess their own ability [gabapentin | Warnings and Precautions]"
+What conditions is prednisone used for?,prednisone,Indications and Usage,True,False,YES,"Prednisone is indicated for the following conditions:  
+
+- Primary or secondary adrenocortical insufficiency (including infancy with mineralocorticoid supplementation)【prednisone | Indications and Usage】  
+- Congenital adrenal hyperplasia【prednisone | Indications and Usage】  
+- Hypercalcemia associated with cancer【prednisone | Indications and Usage】  
+- Nonsuppurative thyroiditis【prednisone | Indications and Usage】  
+
+- Psoriatic arthritis【prednisone | Indications and Usage】  
+- Rheumatoid arthritis, including juvenile rheumatoid arthritis【prednisone | Indications and Usage】  
+- Ankylosing spondylitis【prednisone | Indications and Usage】  
+- Acute and subacute bursitis【prednisone | Indications and Usage】  
+- Nonspecific tenosynovitis【prednisone | Indications and Usage】  
+- Gouty arthritis【prednisone | Indications and Usage】  
+- Post‑traumatic osteoarthritis【prednisone | Indications and Usage】  
+- Synovitis of osteoarthritis【prednisone | Indications and Usage】  
+- Epicondylitis【prednisone | Indications and Usage】  
+
+- Systemic lupus erythematosus【prednisone | Indications and Usage】  
+- Systemic dermatomyositis (polymyositis)【prednisone | Indications and Usage】  
+- Acute rheumatic carditis【prednisone | Indications and Usage】  
+
+- Pemphigus【prednisone | Indications and Usage】  
+- Bullous dermatitis herpetiformis【prednisone | Indications and Usage】  
+- Severe erythema multiforme (Stevens‑Johnson syndrome)【prednisone | Indications and Usage】  
+- Exfoliative dermatitis【prednisone | Indications and Usage】  
+- Mycosis fungoides【prednisone | Indications and Usage】  
+- Severe psoriasis【prednisone | Indications and Usage】  
+- Severe seborrheic dermatitis【prednisone | Indications and Usage】  
+
+- Severe or incapacitating allergic conditions intractable to conventional treatment, such as seasonal or perennial allergic rhinitis and bronchial allergic disease【prednisone | Indications and Usage】"
+Which drugs reduce the effect of clopidogrel?,clopidogrel,Drug Interactions,True,False,NO,"The label indicates that the following drugs reduce clopidogrel’s antiplatelet effect:  
+- Omeprazole  
+- Esomeprazole  
+- Opioid agonists (e.g., morphine, fentanyl)【clopidogrel | Drug Interactions】【clopidogrel | Warnings and Precautions】"
+How is levothyroxine dosed?,levothyroxine,Dosage and Administration,True,False,YES,"Levothyroxine is started at a dose based on the patient’s weight and clinical situation and then titrated to achieve a euthyroid state.  
+- Adults: full replacement dose is 1.6 mcg/kg/day; some patients may start lower. Titrate by 12.5–25 mcg every 4–6 weeks until euthyroid. [levothyroxine | Dosage and Administration]  
+- Adults at risk for atrial fibrillation or with cardiac disease: start lower than 1.6 mcg/kg/day and titrate every 6–8 weeks. [levothyroxine | Dosage and Administration]  
+- Geriatric patients: start lower than 1.6 mcg/kg/day. [levothyroxine | Dosage and Administration]  
+- Pediatric patients: starting dose is weight‑based and changes with age (see Table 2); titrate every 2 weeks based on serum TSH or free‑T4. [levothyroxine | Dosage and Administration]"
+Why is sildenafil contraindicated with nitrates?,sildenafil,Contraindications,True,False,YES,"Sildenafil is contraindicated with nitrates because it can potentiate the hypotensive effect of nitrates, leading to a dangerous drop in blood pressure. [sildenafil | Contraindications] 4.1 Nitrates; [sildenafil | Drug Interactions] 7.2 Alpha‑blockers section."
+What is furosemide used for?,furosemide,Indications and Usage,True,False,YES,"Furosemide is used to treat edema associated with congestive heart failure, cirrhosis of the liver, and renal disease, including the nephrotic syndrome, and it may also be used for hypertension alone or with other antihypertensive agents. [furosemide | Indications and Usage]"

@@ -1,0 +1,128 @@
+"""Agent tools: label search (RAG), interaction checker, adverse-event statistics."""
+import json
+import os
+import re
+from functools import lru_cache
+from typing import Optional
+
+import requests
+from langchain_core.tools import tool
+
+import rag
+from config import DEFAULT_DB_DIR, LABELS_PATH
+from drugs import ALIASES, DRUGS
+
+DB_DIR = DEFAULT_DB_DIR      # tests override these two
+LABELS = LABELS_PATH
+EVENT_URL = "https://api.fda.gov/drug/event.json"
+
+# Drug classes a label may use instead of naming the other drug.
+CLASS_TERMS = {
+    "ibuprofen": ["nsaid", "nsaids", "nonsteroidal"], "naproxen": ["nsaid", "nsaids", "nonsteroidal"],
+    "diclofenac": ["nsaid", "nsaids", "nonsteroidal"], "aspirin": ["nsaid", "nsaids", "salicylate", "salicylates"],
+    "warfarin": ["anticoagulant", "anticoagulants", "coumarin"], "clopidogrel": ["antiplatelet", "antiplatelets"],
+    "lisinopril": ["ace inhibitor", "ace inhibitors"], "losartan": ["angiotensin receptor blocker", "arb", "arbs"],
+    "simvastatin": ["statin", "statins"], "atorvastatin": ["statin", "statins"],
+    "sertraline": ["ssri", "ssris", "serotonergic"], "fluoxetine": ["ssri", "ssris", "serotonergic"],
+    "tramadol": ["opioid", "opioids", "serotonergic"],
+    "alprazolam": ["benzodiazepine", "benzodiazepines"], "diazepam": ["benzodiazepine", "benzodiazepines"],
+    "omeprazole": ["proton pump inhibitor", "ppi", "ppis"], "pantoprazole": ["proton pump inhibitor", "ppi", "ppis"],
+}
+
+
+def normalize(name):
+    """Map a user-supplied drug name or brand to the generic name in the index (None if unknown)."""
+    n = (name or "").strip().lower()
+    n = ALIASES.get(n, n)
+    return n if n in DRUGS else None
+
+
+@lru_cache(maxsize=4)
+def _sections(path):
+    out = {}
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            r = json.loads(line)
+            out[(r["drug"], r["section"])] = r["text"]
+    return out
+
+
+def _mentions(text, other):
+    terms = [other] + [k for k, v in ALIASES.items() if v == other] + CLASS_TERMS.get(other, [])
+    hits = []
+    for t in terms:
+        for m in re.finditer(rf"\b{re.escape(t)}\b", text, flags=re.I):
+            hits.append((t, m.start()))
+    return sorted(hits, key=lambda h: h[1])
+
+
+def _excerpt(text, pos, width=220):
+    return "..." + text[max(0, pos - width): pos + width] + "..."
+
+
+@tool
+def search_labels(query: str, drug: Optional[str] = None) -> str:
+    """Semantic search over FDA drug label sections (indications, dosage, contraindications,
+    warnings, interactions, adverse reactions). Use for any factual question about a medicine.
+    Optionally pass a single drug name to restrict the search to that drug's label."""
+    d = normalize(drug) if drug else None
+    docs = rag.retrieve(query, drug=d, k=4, persist_dir=DB_DIR)
+    if not docs:
+        return "No label text found."
+    return "\n\n".join(x.page_content for x in docs)
+
+
+@tool
+def check_interaction(drug_a: str, drug_b: str) -> str:
+    """Check whether the FDA label of either drug mentions the other (by name, brand or drug class)
+    in its Drug Interactions section. Use for any question like 'can I take A with B'."""
+    a, b = normalize(drug_a), normalize(drug_b)
+    unknown = [raw for raw, norm in ((drug_a, a), (drug_b, b)) if norm is None]
+    if unknown:
+        return f"Not in the index: {', '.join(unknown)}. Indexed drugs: {', '.join(sorted(DRUGS))}."
+    if a == b:
+        return "Both names refer to the same drug; ask about two different drugs."
+    secs = _sections(LABELS)
+    lines, found = [], False
+    for x, y in ((a, b), (b, a)):
+        text = secs.get((x, "Drug Interactions"))
+        if text is None:
+            lines.append(f"[{x} | Drug Interactions] section not available in the index.")
+            continue
+        hits = _mentions(text, y)
+        if not hits:
+            lines.append(f"[{x} | Drug Interactions] does not mention {y} or its drug class.")
+            continue
+        found = True
+        term, pos = hits[0]
+        lines.append(f"[{x} | Drug Interactions] mentions '{term}': {_excerpt(text, pos)}")
+    lines.append("Result: " + ("at least one label flags this pair." if found else
+                 "no explicit mention in either label's Drug Interactions section. This is NOT proof of safety."))
+    return "\n".join(lines)
+
+
+@tool
+def adverse_event_stats(drug: str) -> str:
+    """Most frequently reported adverse reactions for a drug in the FDA FAERS database (via openFDA).
+    Use when asked which side effects are most reported in real-world reports."""
+    d = normalize(drug)
+    if d is None:
+        return f"Not in the index: {drug}."
+    params = {"search": f'patient.drug.openfda.generic_name:"{d.upper()}"',
+              "count": "patient.reaction.reactionmeddrapt.exact", "limit": 5}
+    if os.getenv("OPENFDA_API_KEY"):
+        params["api_key"] = os.getenv("OPENFDA_API_KEY")
+    try:
+        r = requests.get(EVENT_URL, params=params, timeout=20)
+        r.raise_for_status()
+        results = r.json().get("results", [])
+    except (requests.RequestException, ValueError) as e:
+        return f"openFDA is unavailable right now ({type(e).__name__})."
+    if not results:
+        return f"No adverse event reports found for {d}."
+    rows = ", ".join(f"{x['term']} ({x['count']})" for x in results)
+    return (f"[{d} | FAERS reports] Most frequently reported reactions: {rows}. "
+            "Reports are voluntary and do not prove the drug caused the reaction.")
+
+
+TOOLS = [search_labels, check_interaction, adverse_event_stats]
