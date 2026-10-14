@@ -114,3 +114,27 @@ def test_llm_failure_is_handled():
     model = Scripted(script=[RuntimeError("x"), RuntimeError("x")])
     text, _ = agent.ask(agent.make_graph(model), "What is metformin for?")
     assert "failed" in text
+
+
+def test_verify_citations_valid_and_invalid():
+    steps = [{"tool": "search_labels", "output": "[lisinopril | Contraindications] Do not use with history of angioedema."}]
+    valid, invalid, avail = agent.verify_citations("Safe [lisinopril | Contraindications]", steps)
+    assert valid is True
+    assert len(invalid) == 0
+
+    valid, invalid, avail = agent.verify_citations("Interacts [lisinopril | Warnings] and [ibuprofen | Dosage]", steps)
+    assert valid is False
+    assert "lisinopril | Warnings" in invalid or "ibuprofen | Dosage" in invalid
+
+
+def test_citation_verification_triggers_correction():
+    call = AIMessage(content="", tool_calls=[{"name": "check_interaction", "id": "c1",
+                                              "args": {"drug_a": "ibuprofen", "drug_b": "warfarin"}}])
+    # The first final answer hallucinates a tag not in tool output
+    bad_final = AIMessage(content="Bleeding risk [warfarin | Boxed Warning].")
+    # Corrected answer provides real tag from tool output
+    good_final = AIMessage(content="Bleeding risk [warfarin | Drug Interactions].")
+    model = Scripted(script=[call, bad_final, good_final])
+    text, steps = agent.ask(agent.make_graph(model), "Can I take ibuprofen with warfarin?")
+    assert "[warfarin | Drug Interactions]" in text
+

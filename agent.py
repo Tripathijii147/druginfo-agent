@@ -64,6 +64,29 @@ def make_graph(llm=None, checkpointer=None):
     return g.compile(checkpointer=checkpointer)
 
 
+def verify_citations(answer_text, steps):
+    """Verify that every citation tag [drug | section] in answer_text appears in tool outputs.
+
+    Returns (valid, invalid_tags, valid_tags_found_in_tools).
+    """
+    cited_tags = set(re.findall(r"\[([a-zA-Z0-9_\- ]+\s*\|\s*[a-zA-Z0-9_\- ]+)\]", answer_text))
+    if not cited_tags:
+        return True, set(), set()
+
+    tool_outputs = " ".join(s.get("output", "") for s in steps)
+    available_tags = set(re.findall(r"\[([a-zA-Z0-9_\- ]+\s*\|\s*[a-zA-Z0-9_\- ]+)\]", tool_outputs))
+    # Normalize comparison (case-insensitive and trimmed)
+    norm_available = {"|".join(part.strip().lower() for part in t.split("|")): t for t in available_tags}
+
+    invalid = set()
+    for tag in cited_tags:
+        norm_tag = "|".join(part.strip().lower() for part in tag.split("|"))
+        if norm_tag not in norm_available:
+            invalid.add(tag)
+
+    return len(invalid) == 0, invalid, available_tags
+
+
 def ask(graph, question, history=(), recursion_limit=10):
     """history: [(role, text)] with role 'user' or 'assistant'. Returns (final_text, steps)."""
     msgs = [HumanMessage(content=t) if r == "user" else AIMessage(content=t) for r, t in history]
@@ -82,4 +105,27 @@ def ask(graph, question, history=(), recursion_limit=10):
         elif isinstance(m, ToolMessage) and m.tool_call_id in steps:
             steps[m.tool_call_id]["output"] = str(m.content)
     final = str(new[-1].content) if new else ""
-    return final, [steps[i] for i in order]
+    step_list = [steps[i] for i in order]
+
+    # Citation Verification: If the agent used tools and generated answers with citations,
+    # verify that cited citations match real tool outputs.
+    if step_list and final:
+        valid, invalid_tags, available_tags = verify_citations(final, step_list)
+        if not valid and available_tags:
+            # Re-prompt once to correct hallucinated citation tags
+            correct_prompt = (
+                f"Your previous answer included citations that were not in your tool outputs: {', '.join(sorted(invalid_tags))}.\n"
+                f"Only use citations that actually appeared in the tool excerpts: {', '.join(sorted(available_tags))}.\n"
+                "Please rewrite your answer keeping only verified citations."
+            )
+            retry_msgs = list(out["messages"]) + [HumanMessage(content=correct_prompt)]
+            try:
+                retry_out = graph.invoke({"messages": retry_msgs}, config={"recursion_limit": 5})
+                final_retry = retry_out["messages"][-1]
+                if isinstance(final_retry, AIMessage) and final_retry.content:
+                    final = str(final_retry.content)
+            except Exception:
+                pass
+
+    return final, step_list
+
