@@ -1,0 +1,502 @@
+[
+  {
+    "question": "What are the contraindications of lisinopril?",
+    "drug": "lisinopril",
+    "section": "Contraindications"
+  },
+  {
+    "question": "What are common side effects of lisinopril?",
+    "drug": "lisinopril",
+    "section": "Adverse Reactions"
+  },
+  {
+    "question": "Who should not take metformin?",
+    "drug": "metformin",
+    "section": "Contraindications"
+  },
+  {
+    "question": "What is metformin used to treat?",
+    "drug": "metformin",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "Which drugs interact with warfarin?",
+    "drug": "warfarin",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "What conditions is warfarin indicated for?",
+    "drug": "warfarin",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What is atorvastatin prescribed for?",
+    "drug": "atorvastatin",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What drug interactions does atorvastatin have?",
+    "drug": "atorvastatin",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "What is amlodipine used for?",
+    "drug": "amlodipine",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What adverse reactions were reported with amlodipine?",
+    "drug": "amlodipine",
+    "section": "Adverse Reactions"
+  },
+  {
+    "question": "When is losartan contraindicated?",
+    "drug": "losartan",
+    "section": "Contraindications"
+  },
+  {
+    "question": "What is losartan indicated for?",
+    "drug": "losartan",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What conditions does omeprazole treat?",
+    "drug": "omeprazole",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What medicines interact with omeprazole?",
+    "drug": "omeprazole",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "What infections is amoxicillin used for?",
+    "drug": "amoxicillin",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "Who should not take amoxicillin?",
+    "drug": "amoxicillin",
+    "section": "Contraindications"
+  },
+  {
+    "question": "What is azithromycin indicated for?",
+    "drug": "azithromycin",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What are the serious warnings for ciprofloxacin?",
+    "drug": "ciprofloxacin",
+    "section": "Warnings and Precautions"
+  },
+  {
+    "question": "What are the contraindications of sertraline?",
+    "drug": "sertraline",
+    "section": "Contraindications"
+  },
+  {
+    "question": "What drugs interact with sertraline?",
+    "drug": "sertraline",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "What is alprazolam prescribed for?",
+    "drug": "alprazolam",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What drugs interact with alprazolam?",
+    "drug": "alprazolam",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "When should tramadol not be used?",
+    "drug": "tramadol",
+    "section": "Contraindications"
+  },
+  {
+    "question": "What is gabapentin used to treat?",
+    "drug": "gabapentin",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What are the side effects of gabapentin?",
+    "drug": "gabapentin",
+    "section": "Adverse Reactions"
+  },
+  {
+    "question": "What conditions is prednisone used for?",
+    "drug": "prednisone",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "Which drugs reduce the effect of clopidogrel?",
+    "drug": "clopidogrel",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "How is levothyroxine dosed?",
+    "drug": "levothyroxine",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "Why is sildenafil contraindicated with nitrates?",
+    "drug": "sildenafil",
+    "section": "Contraindications"
+  },
+  {
+    "question": "What is furosemide used for?",
+    "drug": "furosemide",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What is ibuprofen prescribed to treat?",
+    "drug": "ibuprofen",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What medical conditions are approved for ibuprofen?",
+    "drug": "ibuprofen",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What is the primary indication of ibuprofen?",
+    "drug": "ibuprofen",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "How should ibuprofen be administered?",
+    "drug": "ibuprofen",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "What are the recommended dosing guidelines for ibuprofen?",
+    "drug": "ibuprofen",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "How is ibuprofen typically dosed and taken?",
+    "drug": "ibuprofen",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "Under what clinical circumstances is ibuprofen contraindicated?",
+    "drug": "ibuprofen",
+    "section": "Contraindications"
+  },
+  {
+    "question": "Which patients should avoid taking ibuprofen?",
+    "drug": "ibuprofen",
+    "section": "Contraindications"
+  },
+  {
+    "question": "When is ibuprofen strictly contraindicated?",
+    "drug": "ibuprofen",
+    "section": "Contraindications"
+  },
+  {
+    "question": "What critical warnings are associated with ibuprofen?",
+    "drug": "ibuprofen",
+    "section": "Warnings"
+  },
+  {
+    "question": "What patient safety warnings are listed for ibuprofen?",
+    "drug": "ibuprofen",
+    "section": "Warnings"
+  },
+  {
+    "question": "What significant drug interactions are noted for ibuprofen?",
+    "drug": "ibuprofen",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "Which medications should be avoided or monitored when taking ibuprofen?",
+    "drug": "ibuprofen",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "What are the key interaction risks associated with ibuprofen?",
+    "drug": "ibuprofen",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "What adverse reactions or side effects are documented for ibuprofen?",
+    "drug": "ibuprofen",
+    "section": "Adverse Reactions"
+  },
+  {
+    "question": "What are the reported clinical trial side effects of ibuprofen?",
+    "drug": "ibuprofen",
+    "section": "Adverse Reactions"
+  },
+  {
+    "question": "Which undesirable effects may occur during treatment with ibuprofen?",
+    "drug": "ibuprofen",
+    "section": "Adverse Reactions"
+  },
+  {
+    "question": "What is acetaminophen prescribed to treat?",
+    "drug": "acetaminophen",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What medical conditions are approved for acetaminophen?",
+    "drug": "acetaminophen",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What is the primary indication of acetaminophen?",
+    "drug": "acetaminophen",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "How should acetaminophen be administered?",
+    "drug": "acetaminophen",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "What are the recommended dosing guidelines for acetaminophen?",
+    "drug": "acetaminophen",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "How is acetaminophen typically dosed and taken?",
+    "drug": "acetaminophen",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "What critical warnings are associated with acetaminophen?",
+    "drug": "acetaminophen",
+    "section": "Warnings"
+  },
+  {
+    "question": "What patient safety warnings are listed for acetaminophen?",
+    "drug": "acetaminophen",
+    "section": "Warnings"
+  },
+  {
+    "question": "What is aspirin prescribed to treat?",
+    "drug": "aspirin",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What medical conditions are approved for aspirin?",
+    "drug": "aspirin",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What is the primary indication of aspirin?",
+    "drug": "aspirin",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "How should aspirin be administered?",
+    "drug": "aspirin",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "What are the recommended dosing guidelines for aspirin?",
+    "drug": "aspirin",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "How is aspirin typically dosed and taken?",
+    "drug": "aspirin",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "What critical warnings are associated with aspirin?",
+    "drug": "aspirin",
+    "section": "Warnings"
+  },
+  {
+    "question": "What patient safety warnings are listed for aspirin?",
+    "drug": "aspirin",
+    "section": "Warnings"
+  },
+  {
+    "question": "What is naproxen prescribed to treat?",
+    "drug": "naproxen",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What medical conditions are approved for naproxen?",
+    "drug": "naproxen",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What is the primary indication of naproxen?",
+    "drug": "naproxen",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "How should naproxen be administered?",
+    "drug": "naproxen",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "What are the recommended dosing guidelines for naproxen?",
+    "drug": "naproxen",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "How is naproxen typically dosed and taken?",
+    "drug": "naproxen",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "Under what clinical circumstances is naproxen contraindicated?",
+    "drug": "naproxen",
+    "section": "Contraindications"
+  },
+  {
+    "question": "Which patients should avoid taking naproxen?",
+    "drug": "naproxen",
+    "section": "Contraindications"
+  },
+  {
+    "question": "When is naproxen strictly contraindicated?",
+    "drug": "naproxen",
+    "section": "Contraindications"
+  },
+  {
+    "question": "What serious warnings and precautions accompany naproxen?",
+    "drug": "naproxen",
+    "section": "Warnings and Precautions"
+  },
+  {
+    "question": "What safety precautions must patients take with naproxen?",
+    "drug": "naproxen",
+    "section": "Warnings and Precautions"
+  },
+  {
+    "question": "What boxed or major clinical warnings exist for naproxen?",
+    "drug": "naproxen",
+    "section": "Warnings and Precautions"
+  },
+  {
+    "question": "What significant drug interactions are noted for naproxen?",
+    "drug": "naproxen",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "Which medications should be avoided or monitored when taking naproxen?",
+    "drug": "naproxen",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "What are the key interaction risks associated with naproxen?",
+    "drug": "naproxen",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "What adverse reactions or side effects are documented for naproxen?",
+    "drug": "naproxen",
+    "section": "Adverse Reactions"
+  },
+  {
+    "question": "What are the reported clinical trial side effects of naproxen?",
+    "drug": "naproxen",
+    "section": "Adverse Reactions"
+  },
+  {
+    "question": "Which undesirable effects may occur during treatment with naproxen?",
+    "drug": "naproxen",
+    "section": "Adverse Reactions"
+  },
+  {
+    "question": "What is diclofenac prescribed to treat?",
+    "drug": "diclofenac",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What medical conditions are approved for diclofenac?",
+    "drug": "diclofenac",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "What is the primary indication of diclofenac?",
+    "drug": "diclofenac",
+    "section": "Indications and Usage"
+  },
+  {
+    "question": "How should diclofenac be administered?",
+    "drug": "diclofenac",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "What are the recommended dosing guidelines for diclofenac?",
+    "drug": "diclofenac",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "How is diclofenac typically dosed and taken?",
+    "drug": "diclofenac",
+    "section": "Dosage and Administration"
+  },
+  {
+    "question": "Under what clinical circumstances is diclofenac contraindicated?",
+    "drug": "diclofenac",
+    "section": "Contraindications"
+  },
+  {
+    "question": "Which patients should avoid taking diclofenac?",
+    "drug": "diclofenac",
+    "section": "Contraindications"
+  },
+  {
+    "question": "When is diclofenac strictly contraindicated?",
+    "drug": "diclofenac",
+    "section": "Contraindications"
+  },
+  {
+    "question": "What serious warnings and precautions accompany diclofenac?",
+    "drug": "diclofenac",
+    "section": "Warnings and Precautions"
+  },
+  {
+    "question": "What safety precautions must patients take with diclofenac?",
+    "drug": "diclofenac",
+    "section": "Warnings and Precautions"
+  },
+  {
+    "question": "What boxed or major clinical warnings exist for diclofenac?",
+    "drug": "diclofenac",
+    "section": "Warnings and Precautions"
+  },
+  {
+    "question": "What significant drug interactions are noted for diclofenac?",
+    "drug": "diclofenac",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "Which medications should be avoided or monitored when taking diclofenac?",
+    "drug": "diclofenac",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "What are the key interaction risks associated with diclofenac?",
+    "drug": "diclofenac",
+    "section": "Drug Interactions"
+  },
+  {
+    "question": "What adverse reactions or side effects are documented for diclofenac?",
+    "drug": "diclofenac",
+    "section": "Adverse Reactions"
+  },
+  {
+    "question": "What are the reported clinical trial side effects of diclofenac?",
+    "drug": "diclofenac",
+    "section": "Adverse Reactions"
+  },
+  {
+    "question": "Which undesirable effects may occur during treatment with diclofenac?",
+    "drug": "diclofenac",
+    "section": "Adverse Reactions"
+  },
+  {
+    "question": "What is metformin prescribed to treat?",
+    "drug": "metformin",
+    "section": "Indications and Usage"
+  }
+]
