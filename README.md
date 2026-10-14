@@ -12,7 +12,7 @@ pinned: false
 
 [![CI](https://github.com/Tripathijii147/druginfo-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/Tripathijii147/druginfo-agent/actions)
 
-**Live demo:** https://huggingface.co/spaces/Tripathijii147/druginfo-agent
+**Live demo:** https://druginfo-agent-nulmtmjne8khoa3zwcvbwn.streamlit.app/
 
 A LangGraph agent that answers medicine questions **only from FDA label text**, cites the label section for every claim, and refuses when the labels don't answer. Not medical advice.
 
@@ -22,7 +22,7 @@ A LangGraph agent that answers medicine questions **only from FDA label text**, 
 flowchart LR
     U[User question] --> G{Emergency guardrail}
     G -- emergency terms --> E[Static safety reply]
-    G -- otherwise --> A[LLM agent<br/>Llama 3.3 70B via Groq]
+    G -- otherwise --> A[LLM agent<br/>GPT-OSS 20B via Groq]
     A -- tool call --> T[Tools]
     T --> A
     A --> R[Cited answer or refusal]
@@ -75,5 +75,5 @@ streamlit run app.py
 
 ## Stack
 
-Python, LangChain, LangGraph, ChromaDB, sentence-transformers (BAAI/bge-small-en-v1.5), Groq (GPT-OSS 20B), Streamlit, openFDA, GitHub Actions, Hugging Face Spaces.
+Python, LangChain, LangGraph, ChromaDB, sentence-transformers (BAAI/bge-small-en-v1.5), Groq (GPT-OSS 20B), Streamlit, openFDA, GitHub Actions, Streamlit Community Cloud.
 
