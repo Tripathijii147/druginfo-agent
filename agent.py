@@ -23,6 +23,7 @@ SYSTEM = (
     "doctor or pharmacist for decisions about their own care."
 )
 
+# Safety Guardrail RegExes
 EMERGENCY = re.compile(
     r"overdos|can'?t breathe|cannot breathe|chest pain|suicid|kill myself|want to die|self[- ]harm|"
     r"anaphyla|swollen (face|tongue|throat)|poison|seizure|unconscious", re.I)
@@ -31,12 +32,41 @@ EMERGENCY_REPLY = (
     "or go to the nearest emergency room. If someone may have taken too much of a medicine, contact a "
     "poison control centre right away. I can't help with emergencies, and I'm not a substitute for a doctor.")
 
+PROMPT_INJECTION = re.compile(
+    r"(ignore\s+(previous|all)\s+instructions|system\s+prompt|jailbreak|disregard|you\s+are\s+now|DAN\s+mode|"
+    r"developer\s+mode|override\s+safety|bypass\s+rules)", re.I)
+INJECTION_REPLY = "I cannot fulfill this request. I am only permitted to provide factual information from verified FDA drug labels."
+
+PERSONAL_DOSAGE = re.compile(
+    r"(what\s+dose\s+should\s+i\s+take|how\s+much\s+(should\s+i|can\s+i)\s+take|my\s+dose|prescribe\s+me|"
+    r"can\s+i\s+take\s+\d+\s*mg|recommend\s+a\s+dose\s+for\s+me)", re.I)
+DOSAGE_DEFLECTION = (
+    "I cannot recommend personal dosages or give treatment advice. Dosage depends on individual patient factors, "
+    "medical history, and kidney/liver function. Please consult a licensed physician or pharmacist for your specific dosage.")
+
+PEDIATRIC_QUERY = re.compile(
+    r"(for\s+my\s+(baby|infant|toddler|child|newborn|\d+[- ]year[- ]old|kid)|"
+    r"(give|administer).*(to\s+my\s+|\b)(baby|child|infant|toddler|newborn|\d+[- ]year[- ]old|kid)|"
+    r"can\s+i\s+give\s+(a\s+)?(baby|child|infant|toddler))", re.I)
+PEDIATRIC_DEFLECTION = (
+    "Pediatric drug administration requires strict weight-based calculation and direct medical supervision. "
+    "I cannot advise on giving medicines to children or infants. Please contact a pediatrician or pharmacist.")
+
 
 def make_graph(llm=None, checkpointer=None):
     llm_tools = (llm or rag.get_llm()).bind_tools(TOOLS)
 
-    def emergency(state):
+    def emergency_node(state):
         return {"messages": [AIMessage(content=EMERGENCY_REPLY)]}
+
+    def injection_node(state):
+        return {"messages": [AIMessage(content=INJECTION_REPLY)]}
+
+    def dosage_node(state):
+        return {"messages": [AIMessage(content=DOSAGE_DEFLECTION)]}
+
+    def pediatric_node(state):
+        return {"messages": [AIMessage(content=PEDIATRIC_DEFLECTION)]}
 
     def agent(state):
         msgs = [SystemMessage(content=SYSTEM)] + state["messages"]
@@ -51,17 +81,45 @@ def make_graph(llm=None, checkpointer=None):
 
     def entry(state):
         last = state["messages"][-1]
-        return "emergency" if isinstance(last, HumanMessage) and EMERGENCY.search(last.content) else "agent"
+        if isinstance(last, HumanMessage):
+            txt = last.content
+            if EMERGENCY.search(txt):
+                return "emergency"
+            if PROMPT_INJECTION.search(txt):
+                return "injection"
+            if PERSONAL_DOSAGE.search(txt):
+                return "dosage"
+            if PEDIATRIC_QUERY.search(txt):
+                return "pediatric"
+        return "agent"
 
     g = StateGraph(MessagesState)
-    g.add_node("emergency", emergency)
+    g.add_node("emergency", emergency_node)
+    g.add_node("injection", injection_node)
+    g.add_node("dosage", dosage_node)
+    g.add_node("pediatric", pediatric_node)
     g.add_node("agent", agent)
     g.add_node("tools", ToolNode(TOOLS))
-    g.add_conditional_edges(START, entry, {"emergency": "emergency", "agent": "agent"})
-    g.add_conditional_edges("agent", tools_condition)   # tool calls -> "tools", else END
+
+    g.add_conditional_edges(
+        START,
+        entry,
+        {
+            "emergency": "emergency",
+            "injection": "injection",
+            "dosage": "dosage",
+            "pediatric": "pediatric",
+            "agent": "agent"
+        }
+    )
+    g.add_conditional_edges("agent", tools_condition)
     g.add_edge("tools", "agent")
     g.add_edge("emergency", END)
+    g.add_edge("injection", END)
+    g.add_edge("dosage", END)
+    g.add_edge("pediatric", END)
     return g.compile(checkpointer=checkpointer)
+
 
 
 def verify_citations(answer_text, steps):
