@@ -5,3 +5,4 @@ langchain-text-splitters>=0.3
 langchain-chroma>=0.2
 langgraph>=0.2
 pytest>=8
+rank-bm25>=0.2

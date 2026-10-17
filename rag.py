@@ -160,7 +160,7 @@ def rerank(question, docs, top_k=4):
         return docs[:top_k]
 
 
-def retrieve(question, drug=None, k=4, persist_dir=DEFAULT_DB_DIR, auto_filter=True, mode="hybrid_rerank"):
+def retrieve(question, drug=None, k=4, persist_dir=DEFAULT_DB_DIR, auto_filter=True, mode="dense"):
     """Retrieve top chunks.
 
     Modes:
