@@ -111,6 +111,7 @@ with tab_chat:
                         log_feedback(st.session_state.chat[i-1]["text"], m["text"], "down")
                         m["feedback"] = "down"
                         st.warning("Flagged for review!")
+                st.caption("🔒 *Notice:* If you submit feedback, your question, our answer and your rating are saved to help improve this tool. Please don't include names or personal details.")
 
     question = st.chat_input("Ask about a medicine, interaction, or brand (e.g. Dolo 650 with Ecosprin)...") or st.session_state.pop("pending", None)
     if question:

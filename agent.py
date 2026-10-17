@@ -146,6 +146,39 @@ def verify_citations(answer_text, steps):
     return len(invalid) == 0, invalid, available_tags
 
 
+REASSURANCE_PATTERNS = re.compile(
+    r"\b(is safe|are safe|can be safely taken|no known interaction|completely safe|safe to take together|fine to take together|no risk|no problem)\b",
+    re.I
+)
+
+
+def post_check_safety(final_text, steps):
+    """Safety guardrail: ensures no draft reassures about an unverified or flagged interaction pair.
+    If tools flagged an interaction or reported that an interaction could not be verified in the package insert,
+    any draft containing false reassurance ('is safe to take', 'no problem', etc.) is corrected."""
+    if not steps or not final_text:
+        return final_text
+
+    tool_outputs = " ".join(s.get("output", "") for s in steps)
+    has_flag = "at least one label flags" in tool_outputs or "Flagged Interactions" in tool_outputs
+    has_unverified = "could not verify interaction" in tool_outputs or "NOT proof of safety" in tool_outputs
+
+    if (has_flag or has_unverified) and REASSURANCE_PATTERNS.search(final_text):
+        if has_flag:
+            return (
+                "Warning: A potential interaction or dosage limitation was identified in official FDA package inserts.\n\n"
+                f"{final_text}\n\n"
+                "Please do not assume this combination is safe. Consult your physician or pharmacist before combining these medications."
+            )
+        elif has_unverified:
+            return (
+                "Caution: Interaction data between these medications could not be verified in the indexed FDA label sections.\n\n"
+                "Absence of an explicit warning in a drug label is NOT proof of safety. Please consult a doctor or pharmacist for clinical guidance."
+            )
+
+    return final_text
+
+
 def ask(graph, question, history=(), recursion_limit=10):
     """history: [(role, text)] with role 'user' or 'assistant'. Returns (final_text, steps)."""
     msgs = [HumanMessage(content=t) if r == "user" else AIMessage(content=t) for r, t in history]
@@ -186,5 +219,9 @@ def ask(graph, question, history=(), recursion_limit=10):
             except Exception:
                 pass
 
+    # Safety Post-Check: override any false reassurance on unverified or flagged pairs
+    final = post_check_safety(final, step_list)
+
     return final, step_list
+
 

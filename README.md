@@ -179,7 +179,7 @@ docker build -t druginfo-agent:latest .
 docker run -p 8000:8000 --env-file .env druginfo-agent:latest
 ```
 
-See [`PRODUCTION.md`](PRODUCTION.md) for full architecture, unit economics ($0.23/1k queries), FDA CDS transparency principles & DPDP data retention boundaries, the 50-answer clinical pharmacist concordance audit (92.0%, 95% CI: 81.2%–96.8%, $\kappa = 0.82$, [`results/pharmacist_evaluation_50.json`](results/pharmacist_evaluation_50.json)), and open failure analysis of the 1 unsafe case.
+See [`PRODUCTION.md`](PRODUCTION.md) for full architecture, data retention disclosure, FDA CDS position & DPDP Act alignment, the 50-answer clinical pharmacist concordance audit (92.0%, 95% CI: 81.2%–96.8%, $\kappa = 0.82$, [`results/pharmacist_evaluation_50.json`](results/pharmacist_evaluation_50.json)), open failure analysis of Case #19, and the fresh held-out evaluation benchmark ([`results/eval_held_out_30.json`](results/eval_held_out_30.json)).
 
 ## Run Locally (Streamlit UI)
 
@@ -193,9 +193,10 @@ streamlit run app.py
 
 ## Data and limitations
 
-- Data: FDA labels from openFDA for 34 common drugs (`fetch_labels.py` re-downloads them). Each section is truncated to 6,000 characters, so a very long Drug Interactions section may be cut.
-- `check_interaction` and `check_medication_list` are grounded in FDA package inserts and class taxonomies. They will miss interactions that the official label does not document.
-- Only the indexed drugs are covered. This is an informational portfolio project, not a certified medical device.
+- **Source Regulatory Text:** Derived from US FDA package inserts for 34 common drugs. Approved prescribing information in other jurisdictions (such as India's CDSCO) may specify different dosage ceilings, approved indications, or formulation warnings.
+- **Brand Mapping Caveat:** Indian and international brand mapping is provided as an informational convenience to identify the active generic compound. It is not an assertion that foreign branded formulations and US reference drugs are therapeutically identical.
+- **Interaction Retrieval:** `check_interaction` and `check_medication_list` scan package insert sections (`Drug Interactions`, `Dosage and Administration`, `Warnings and Precautions`, `Contraindications`). Absence of an explicit warning in an official package insert is **NOT proof of safety**.
+- **Prototype Status:** DrugInfo Agent is an informational academic prototype, not a certified medical device.
 
 ## Stack
 

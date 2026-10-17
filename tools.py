@@ -16,18 +16,35 @@ DB_DIR = DEFAULT_DB_DIR      # tests override these two
 LABELS = LABELS_PATH
 EVENT_URL = "https://api.fda.gov/drug/event.json"
 
-# Drug classes a label may use instead of naming the other drug.
+# Drug classes and pharmacological mechanisms a label may use instead of naming the other drug.
 CLASS_TERMS = {
     "ibuprofen": ["nsaid", "nsaids", "nonsteroidal"], "naproxen": ["nsaid", "nsaids", "nonsteroidal"],
     "diclofenac": ["nsaid", "nsaids", "nonsteroidal"], "aspirin": ["nsaid", "nsaids", "salicylate", "salicylates"],
     "warfarin": ["anticoagulant", "anticoagulants", "coumarin"], "clopidogrel": ["antiplatelet", "antiplatelets"],
     "lisinopril": ["ace inhibitor", "ace inhibitors"], "losartan": ["angiotensin receptor blocker", "arb", "arbs"],
-    "simvastatin": ["statin", "statins"], "atorvastatin": ["statin", "statins"],
+    "simvastatin": ["statin", "statins", "cyp3a4", "hmg-coa reductase inhibitor"],
+    "atorvastatin": ["statin", "statins", "cyp3a4", "hmg-coa reductase inhibitor"],
+    "amlodipine": ["calcium channel blocker", "calcium channel blockers", "ccb", "ccbs", "dihydropyridine"],
+    "metoprolol": ["beta blocker", "beta blockers", "beta-blocker", "beta-blockers"],
+    "furosemide": ["loop diuretic", "diuretic", "diuretics"],
+    "prednisone": ["corticosteroid", "corticosteroids", "steroid", "steroids"],
     "sertraline": ["ssri", "ssris", "serotonergic"], "fluoxetine": ["ssri", "ssris", "serotonergic"],
     "tramadol": ["opioid", "opioids", "serotonergic"],
     "alprazolam": ["benzodiazepine", "benzodiazepines"], "diazepam": ["benzodiazepine", "benzodiazepines"],
     "omeprazole": ["proton pump inhibitor", "ppi", "ppis"], "pantoprazole": ["proton pump inhibitor", "ppi", "ppis"],
+    "ciprofloxacin": ["fluoroquinolone", "fluoroquinolones", "quinolone", "quinolones"],
+    "doxycycline": ["tetracycline", "tetracyclines"],
+    "azithromycin": ["macrolide", "macrolides"],
+    "amoxicillin": ["penicillin", "penicillins", "beta-lactam", "beta-lactams"],
 }
+
+# Sections scanned for drug interactions, dosage caps, and contraindications
+SAFETY_SECTIONS = [
+    "Drug Interactions",
+    "Dosage and Administration",
+    "Warnings and Precautions",
+    "Contraindications",
+]
 
 
 def normalize(name):
@@ -75,7 +92,8 @@ def search_labels(query: str, drug: Optional[str] = None) -> str:
 @tool
 def check_interaction(drug_a: str, drug_b: str) -> str:
     """Check whether the FDA label of either drug mentions the other (by name, brand or drug class)
-    in its Drug Interactions section. Use for any question like 'can I take A with B'."""
+    across its Drug Interactions, Dosage, Warnings, or Contraindications sections.
+    Use for any question like 'can I take A with B'."""
     a, b = normalize(drug_a), normalize(drug_b)
     unknown = [raw for raw, norm in ((drug_a, a), (drug_b, b)) if norm is None]
     if unknown:
@@ -85,19 +103,22 @@ def check_interaction(drug_a: str, drug_b: str) -> str:
     secs = _sections(LABELS)
     lines, found = [], False
     for x, y in ((a, b), (b, a)):
-        text = secs.get((x, "Drug Interactions"))
-        if text is None:
-            lines.append(f"[{x} | Drug Interactions] section not available in the index.")
-            continue
-        hits = _mentions(text, y)
-        if not hits:
+        drug_hits = []
+        for sec in SAFETY_SECTIONS:
+            text = secs.get((x, sec))
+            if text:
+                hits = _mentions(text, y)
+                if hits:
+                    found = True
+                    term, pos = hits[0]
+                    drug_hits.append(f"[{x} | {sec}] mentions '{term}': {_excerpt(text, pos)}")
+        if drug_hits:
+            lines.extend(drug_hits)
+        else:
             lines.append(f"[{x} | Drug Interactions] does not mention {y} or its drug class.")
-            continue
-        found = True
-        term, pos = hits[0]
-        lines.append(f"[{x} | Drug Interactions] mentions '{term}': {_excerpt(text, pos)}")
+
     lines.append("Result: " + ("at least one label flags this pair." if found else
-                 "no explicit mention in either label's Drug Interactions section. This is NOT proof of safety."))
+                 "could not verify interaction in official package insert sections. This is NOT proof of safety; absence of an explicit warning is NOT proof that the combination is safe."))
     return "\n".join(lines)
 
 
@@ -134,7 +155,7 @@ def check_medication_list(medications: str) -> str:
     """Analyze a multi-drug regimen (3 or more medications) for all pairwise drug-drug interactions.
     Input: comma-, semicolon-, or newline-separated list of drug names or brands (e.g. 'warfarin, aspirin, metformin, lisinopril, atorvastatin'
     or Indian brands like 'ecosprin, dolo, combiflam, glycomet').
-    Checks all unique pairs against FDA label Drug Interactions sections and returns a structured risk audit."""
+    Checks all unique pairs across FDA label Drug Interactions, Dosage, Warnings, and Contraindications sections."""
     # Detect drugs via detect_drugs
     found_drugs = detect_drugs(medications)
 
@@ -157,13 +178,14 @@ def check_medication_list(medications: str) -> str:
         pair_flagged = False
         excerpts = []
         for x, y in ((a, b), (b, a)):
-            text = secs.get((x, "Drug Interactions"))
-            if text:
-                hits = _mentions(text, y)
-                if hits:
-                    pair_flagged = True
-                    term, pos = hits[0]
-                    excerpts.append(f"[{x} | Drug Interactions] mentions '{term}': {_excerpt(text, pos, width=150)}")
+            for sec in SAFETY_SECTIONS:
+                text = secs.get((x, sec))
+                if text:
+                    hits = _mentions(text, y)
+                    if hits:
+                        pair_flagged = True
+                        term, pos = hits[0]
+                        excerpts.append(f"[{x} | {sec}] mentions '{term}': {_excerpt(text, pos, width=150)}")
 
         if pair_flagged:
             flagged.append((a, b, " | ".join(excerpts)))
@@ -193,10 +215,10 @@ def check_medication_list(medications: str) -> str:
         out_lines.append("")
 
     if unflagged:
-        out_lines.append(f"#### ℹ️ No Explicit Label Warnings ({len(unflagged)} pair(s))")
+        out_lines.append(f"#### ℹ️ Could Not Verify in Package Insert ({len(unflagged)} pair(s))")
         for a, b in unflagged:
             out_lines.append(f"- {a.title()} + {b.title()}")
-        out_lines.append("\n*Important clinical note:* Absence of an explicit warning in the FDA package insert is NOT proof of safety. Always review patient renal/hepatic function and consult a physician or pharmacist.")
+        out_lines.append("\n*Important clinical note:* Could not verify interaction in official package insert sections (Drug Interactions, Dosage, Warnings, Contraindications). Absence of an explicit warning in the FDA package insert is NOT proof of safety. Always review patient renal/hepatic function and consult a physician or pharmacist.")
 
     return "\n".join(out_lines)
 

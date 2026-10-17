@@ -80,15 +80,30 @@ def list_drugs():
     }
 
 
+def get_label_version():
+    """Return mtime string of the labels file to ensure cache invalidation on data refresh."""
+    import os
+    from config import LABELS_PATH
+    try:
+        return str(int(os.path.getmtime(LABELS_PATH)))
+    except Exception:
+        return "v1"
+
+
+def make_cache_key(question: str) -> str:
+    return f"{get_label_version()}:{question.lower().strip()}"
+
+
 @app.post("/ask", response_model=AskResponse)
 def ask_endpoint(req: AskRequest):
     q = req.question.strip()
     if not q:
         raise HTTPException(status_code=400, detail="Question cannot be empty.")
 
+    cache_k = make_cache_key(q)
     # Check cache for identical query without prior conversational history
-    if not req.history and q.lower() in QUERY_CACHE:
-        cached_result = QUERY_CACHE[q.lower()]
+    if not req.history and cache_k in QUERY_CACHE:
+        cached_result = QUERY_CACHE[cache_k]
         return AskResponse(
             question=q,
             answer=cached_result["answer"],
@@ -127,9 +142,19 @@ def ask_endpoint(req: AskRequest):
     }
 
     if not req.history:
-        QUERY_CACHE[q.lower()] = response_data
+        QUERY_CACHE[cache_k] = response_data
 
     return AskResponse(**response_data)
+
+
+@app.post("/cache/clear")
+def clear_cache():
+    """Clear query cache on data update or retrieval change."""
+    global QUERY_CACHE
+    size = len(QUERY_CACHE)
+    QUERY_CACHE.clear()
+    return {"status": "cleared", "previous_size": size}
+
 class MedicationListRequest(BaseModel):
     medications: List[str] = Field(..., example=["warfarin", "aspirin", "metformin", "lisinopril"])
 
