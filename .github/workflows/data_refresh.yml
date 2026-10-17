@@ -1,0 +1,55 @@
+name: Scheduled Data Refresh
+
+on:
+  schedule:
+    # Run at 00:00 on the 1st of every month
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  refresh-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Fetch latest FDA drug labels
+        env:
+          OPENFDA_API_KEY: ${{ secrets.OPENFDA_API_KEY }}
+        run: |
+          python fetch_labels.py
+
+      - name: Check for label diffs
+        id: diff-check
+        run: |
+          if git diff --quiet data/labels.jsonl; then
+            echo "changed=0" >> $GITHUB_OUTPUT
+            echo "No FDA label updates found."
+          else
+            echo "changed=1" >> $GITHUB_OUTPUT
+            echo "Detected updated FDA label text."
+          fi
+
+      - name: Rebuild Chroma Vector Index
+        if: steps.diff-check.outputs.changed == '1'
+        run: |
+          python build_index.py
+
+      - name: Commit and push updated dataset
+        if: steps.diff-check.outputs.changed == '1'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/labels.jsonl
+          git commit -m "chore(data): refresh FDA labels from openFDA [skip ci]"
+          git push

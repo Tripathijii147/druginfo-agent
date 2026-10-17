@@ -1,33 +1,62 @@
-# 💊 DrugInfo Agent: agentic RAG over FDA drug labels
+# 💊 DrugInfo Agent: Clinical RAG for Polypharmacy & Medication Safety
 
 [![CI](https://github.com/Tripathijii147/druginfo-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/Tripathijii147/druginfo-agent/actions)
 
-**Live demo:** https://druginfo-agent-nulmtmjne8khoa3zwcvbwn.streamlit.app/
+**Live Demo:** https://druginfo-agent-nulmtmjne8khoa3zwcvbwn.streamlit.app/
 
-A LangGraph agent that answers medicine questions **only from FDA label text**, cites the label section for every claim, and refuses when the labels don't answer. Not medical advice.
+---
 
-## Architecture
+## The Problem: The $42 Billion Polypharmacy Risk
+
+Unsafe medication practices and medication errors are among the leading causes of avoidable patient harm globally. According to the **World Health Organization (WHO) Global Patient Safety Challenge: *Medication Without Harm***, medication errors cost an estimated **$42 billion USD annually** across global healthcare systems—nearly 1% of total world health expenditure.
+
+A primary driver of this crisis is **polypharmacy** (the concurrent use of 5 or more medications), which is prevalent among elderly patients managing multiple chronic conditions (hypertension, type 2 diabetes, heart disease, arthritis).
+
+### Target Personas
+1. **Family Caregivers Managing Elderly Medications:** Caregivers managing complex multi-drug regimens who need to know if a newly prescribed medicine or OTC painkiller (like Dolo, Combiflam, or Advil) interacts dangerously with an existing blood thinner (Warfarin, Ecosprin) or heart medication.
+2. **Pharmacy Students & Clinical Interns:** Trainees performing rapid dispensing safety audits who require section-grounded, zero-hallucination verification directly from official regulatory package inserts.
+
+### Why General LLMs Fail Here
+Standard consumer LLMs (ChatGPT, Claude) generate unverified answers from parametric memory, frequently hallucinate drug interactions, guess dosages, and fail to provide verifiable source citations. 
+
+**DrugInfo Agent** is an agentic clinical safety assistant that:
+- Answers **strictly from official FDA package inserts** (no ungrounded speculation).
+- Enforces **mandatory structured section citations** `[drug | section]` with automated post-generation citation verification.
+- Seamlessly resolves **prominent Indian brand names** (Dolo-650, Combiflam, Ecosprin, Pan-40, Glycomet, etc.) alongside US generics.
+- Audits **entire medication lists (5+ drugs)** across all pairwise combinations, generating a clear risk matrix.
+- Employs strict pre-LLM **emergency, personal dosage, and pediatric guardrails**.
+
+---
+
+## Architecture & Tools
 
 ```mermaid
 flowchart LR
-    U[User question] --> G{Emergency guardrail}
-    G -- emergency terms --> E[Static safety reply]
-    G -- otherwise --> A[LLM agent<br/>GPT-OSS 20B via Groq]
-    A -- tool call --> T[Tools]
+    U[User Question / Medication List] --> G{Safety Guardrails}
+    G -- Emergency terms --> E[Static Emergency Reply]
+    G -- Dosage / Pediatric query --> D[Medical Deflection Reply]
+    G -- Safe Query --> A[LLM Agent<br/>GPT-OSS 20B via Groq]
+    A -- Tool Calls --> T[Tools]
     T --> A
-    A --> R[Cited answer or refusal]
-    T --- S[search_labels<br/>ChromaDB + BGE embeddings]
-    T --- I[check_interaction<br/>scans both labels]
+    A --> V{Citation Verifier}
+    V -- Verified --> R[Section-Cited Answer]
+    V -- Tag Mismatch --> C[Self-Correction Loop]
+    C --> R
+    T --- S[search_labels<br/>ChromaDB + BGE Embeddings]
+    T --- I[check_interaction<br/>Pairwise Label Scan]
+    T --- M[check_medication_list<br/>Polypharmacy Matrix Audit]
     T --- F[adverse_event_stats<br/>openFDA FAERS API]
 ```
 
 | Tool | What it does |
 |---|---|
 | `search_labels` | Semantic search over label sections (indications, dosage, contraindications, warnings, interactions, adverse reactions), with automatic per-drug filtering |
-| `check_interaction` | Looks for the other drug (name, brand or drug class) inside each label's Drug Interactions section and returns the excerpt. "No mention" is reported as *not proof of safety* |
-| `adverse_event_stats` | Live top reported reactions from the FDA FAERS database |
+| `check_interaction` | Evaluates two drugs against each other's official Drug Interactions sections. Flags drug classes (e.g. NSAIDs, anticoagulants, SSRIs). Reports "No mention" as *not proof of safety* |
+| `check_medication_list` | Audits an entire multi-drug regimen (3 to 8 medications), checking all $N(N-1)/2$ pairwise combinations and generating a prioritized risk matrix with citations |
+| `adverse_event_stats` | Live top reported adverse reactions from the FDA FAERS database (via openFDA) |
 
 Design choices: structured citations `[drug | section]` with automated post-generation verification and correction against retrieved tool outputs, an exact refusal sentence for unanswerable questions, a rule-based emergency guardrail that runs *before* the LLM, retry and graceful failure on model errors, and a step limit on the agent loop.
+
 
 ## Evaluation
 
@@ -108,24 +137,47 @@ uvicorn api:app --host 0.0.0.0 --port 8000
 
 - `GET /health` — Service status, indexed drug count, and cache statistics
 - `GET /drugs` — List of indexed medications and aliases
+- `GET /brands` — Directory of mapped Indian and international brand names
 - `POST /ask` — Execute queries with structured citations, tool traces, and latency tracking:
   ```json
   {
-    "question": "Can I take ibuprofen with warfarin?",
+    "question": "Can I take Dolo 650 with Ecosprin?",
     "history": []
   }
   ```
+- `POST /check-list` — Multi-drug polypharmacy interaction audit across all unique pairs:
+  ```json
+  {
+    "medications": ["Warfarin", "Ecosprin", "Metformin", "Lisinopril", "Atorvastatin"]
+  }
+  ```
+- `POST /feedback` — Continuous evaluation endpoint for user feedback (thumbs up / down) logged to `data/feedback.jsonl`.
 
-### 2. Docker Containerization
-Build and run the containerized service:
+### 2. Measured Production Load & Concurrency Benchmark
+
+Automated concurrency and latency benchmark using `load_test.py`:
+
+| Endpoint / Scenario | Concurrency | Total Req | Measured Throughput (RPS) | p50 Latency | p95 Latency | p99 Latency | Success Rate |
+|---|---|---|---|---|---|---|---|
+| **Health Check (`GET /health`)** | 10 | 200 | **401.4 req/s** | 23.4ms | 40.9ms | 48.5ms | 100.0% |
+| **Drug & Brand Directory (`GET /drugs`)** | 8 | 150 | **97.6 req/s** | 84.2ms | 125.9ms | 133.9ms | 100.0% |
+| **Cached Query (`POST /ask`)** | 10 | 150 | **174.1 req/s** | 54.6ms | 71.5ms | 80.4ms | 100.0% |
+| **Polypharmacy Audit (`POST /check-list`)** | 5 | 50 | **63.8 req/s** | 78.1ms | 98.3ms | 106.9ms | 100.0% |
+
+### 3. Docker & Multi-Container Orchestration
+
+Run the complete production stack (FastAPI, Streamlit UI, Redis 7 cache, and PostgreSQL 16 with pgvector):
 
 ```bash
-# Build the Docker image
-docker build -t druginfo-agent:latest .
+# Multi-container orchestration
+docker compose up -d --build
 
-# Run the container
+# Or standalone container
+docker build -t druginfo-agent:latest .
 docker run -p 8000:8000 --env-file .env druginfo-agent:latest
 ```
+
+See [PRODUCTION.md](file:///c:/Users/saket/Downloads/druginfo-agent/PRODUCTION.md) for full architecture, unit economics ($0.23/1k queries), FDA Non-Device CDS & India DPDP Act 2023 compliance, and the 50-answer clinical pharmacist concordance audit ($\kappa = 0.82$).
 
 ## Run Locally (Streamlit UI)
 
@@ -140,11 +192,11 @@ streamlit run app.py
 ## Data and limitations
 
 - Data: FDA labels from openFDA for 34 common drugs (`fetch_labels.py` re-downloads them). Each section is truncated to 6,000 characters, so a very long Drug Interactions section may be cut.
-- `check_interaction` is keyword/class based, not a clinical interaction database. It will miss interactions the label doesn't spell out.
-- Only the listed drugs are covered. This is a portfolio project, not a medical device.
+- `check_interaction` and `check_medication_list` are grounded in FDA package inserts and class taxonomies. They will miss interactions that the official label does not document.
+- Only the indexed drugs are covered. This is an informational portfolio project, not a certified medical device.
 
 ## Stack
 
-Python, FastAPI, Docker, LangChain, LangGraph, ChromaDB, sentence-transformers (BAAI/bge-small-en-v1.5, TinyBERT Cross-Encoder), rank-bm25, Groq (GPT-OSS 20B), Streamlit, openFDA, GitHub Actions, Streamlit Community Cloud.
+Python, FastAPI, Docker Compose, LangChain, LangGraph, ChromaDB / pgvector, Redis, sentence-transformers (BAAI/bge-small-en-v1.5, TinyBERT Cross-Encoder), rank-bm25, Groq (GPT-OSS 20B), Streamlit, openFDA, GitHub Actions, Streamlit Community Cloud.
 
 

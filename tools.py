@@ -125,4 +125,80 @@ def adverse_event_stats(drug: str) -> str:
             "Reports are voluntary and do not prove the drug caused the reaction.")
 
 
-TOOLS = [search_labels, check_interaction, adverse_event_stats]
+import itertools
+from drugs import BRAND_NOTES, detect_drugs
+
+
+@tool
+def check_medication_list(medications: str) -> str:
+    """Analyze a multi-drug regimen (3 or more medications) for all pairwise drug-drug interactions.
+    Input: comma-, semicolon-, or newline-separated list of drug names or brands (e.g. 'warfarin, aspirin, metformin, lisinopril, atorvastatin'
+    or Indian brands like 'ecosprin, dolo, combiflam, glycomet').
+    Checks all unique pairs against FDA label Drug Interactions sections and returns a structured risk audit."""
+    # Detect drugs via detect_drugs
+    found_drugs = detect_drugs(medications)
+
+    # Also check raw split items in case of comma-separated inputs
+    raw_tokens = re.split(r"[,;\n\+]+", medications)
+    for raw in raw_tokens:
+        norm = normalize(raw)
+        if norm and norm not in found_drugs:
+            found_drugs.append(norm)
+
+    if len(found_drugs) < 2:
+        return (f"Need at least 2 indexed medications to check interactions. Found: {', '.join(found_drugs) if found_drugs else 'none'}. "
+                f"Indexed drugs: {', '.join(sorted(DRUGS))}.")
+
+    secs = _sections(LABELS)
+    flagged = []
+    unflagged = []
+
+    for a, b in itertools.combinations(found_drugs, 2):
+        pair_flagged = False
+        excerpts = []
+        for x, y in ((a, b), (b, a)):
+            text = secs.get((x, "Drug Interactions"))
+            if text:
+                hits = _mentions(text, y)
+                if hits:
+                    pair_flagged = True
+                    term, pos = hits[0]
+                    excerpts.append(f"[{x} | Drug Interactions] mentions '{term}': {_excerpt(text, pos, width=150)}")
+
+        if pair_flagged:
+            flagged.append((a, b, " | ".join(excerpts)))
+        else:
+            unflagged.append((a, b))
+
+    # Identify any brand notes relevant to the query
+    q_lower = medications.lower()
+    active_brand_notes = [note for brand, note in BRAND_NOTES.items() if brand in q_lower]
+
+    out_lines = [
+        f"### Polypharmacy Interaction Audit ({len(found_drugs)} medications, {len(found_drugs)*(len(found_drugs)-1)//2} pairs analyzed)",
+        f"**Medications evaluated:** {', '.join(found_drugs).title()}",
+        ""
+    ]
+
+    if active_brand_notes:
+        out_lines.append("**Brand / Formulation Notes:**")
+        for bn in active_brand_notes:
+            out_lines.append(f"- {bn}")
+        out_lines.append("")
+
+    if flagged:
+        out_lines.append(f"#### 🚨 Flagged Interactions ({len(flagged)} pair(s))")
+        for a, b, exc in flagged:
+            out_lines.append(f"- **{a.title()} + {b.title()}**: {exc}")
+        out_lines.append("")
+
+    if unflagged:
+        out_lines.append(f"#### ℹ️ No Explicit Label Warnings ({len(unflagged)} pair(s))")
+        for a, b in unflagged:
+            out_lines.append(f"- {a.title()} + {b.title()}")
+        out_lines.append("\n*Important clinical note:* Absence of an explicit warning in the FDA package insert is NOT proof of safety. Always review patient renal/hepatic function and consult a physician or pharmacist.")
+
+    return "\n".join(out_lines)
+
+
+TOOLS = [search_labels, check_interaction, adverse_event_stats, check_medication_list]

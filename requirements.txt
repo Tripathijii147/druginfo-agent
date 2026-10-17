@@ -11,3 +11,4 @@ streamlit>=1.36
 rank-bm25>=0.2
 fastapi>=0.110
 uvicorn>=0.28
+pillow>=10.0

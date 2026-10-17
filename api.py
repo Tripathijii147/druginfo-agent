@@ -130,7 +130,86 @@ def ask_endpoint(req: AskRequest):
         QUERY_CACHE[q.lower()] = response_data
 
     return AskResponse(**response_data)
+class MedicationListRequest(BaseModel):
+    medications: List[str] = Field(..., example=["warfarin", "aspirin", "metformin", "lisinopril"])
 
+
+class MedicationListResponse(BaseModel):
+    medications_analyzed: List[str]
+    total_pairs: int
+    report_markdown: str
+    latency_ms: float
+
+
+class FeedbackRequest(BaseModel):
+    question: str = Field(..., example="Can I take ibuprofen with warfarin?")
+    answer: str = Field(..., example="Warfarin label flags NSAIDs...")
+    rating: str = Field(..., example="up", description="'up' for helpful, 'down' for unhelpful/incorrect")
+    comments: Optional[str] = Field(default=None, example="Accurately flagged bleeding risk")
+
+
+class FeedbackResponse(BaseModel):
+    status: str
+    message: str
+
+
+@app.post("/check-list", response_model=MedicationListResponse)
+def check_list_endpoint(req: MedicationListRequest):
+    """Run a multi-drug polypharmacy interaction audit across all unique pairs."""
+    if len(req.medications) < 2:
+        raise HTTPException(status_code=400, detail="Provide at least 2 medications to check.")
+
+    t0 = time.perf_counter()
+    import tools
+    query_str = ", ".join(req.medications)
+    report = tools.check_medication_list.invoke({"medications": query_str})
+    elapsed_ms = round((time.perf_counter() - t0) * 1000, 2)
+
+    return MedicationListResponse(
+        medications_analyzed=req.medications,
+        total_pairs=len(req.medications) * (len(req.medications) - 1) // 2,
+        report_markdown=report,
+        latency_ms=elapsed_ms
+    )
+
+
+@app.post("/feedback", response_model=FeedbackResponse)
+def submit_feedback(req: FeedbackRequest):
+    """Log user feedback (thumbs up/down) to data/feedback.jsonl for continuous evaluation."""
+    import json
+    import os
+    from datetime import datetime
+
+    if req.rating.lower() not in ("up", "down"):
+        raise HTTPException(status_code=400, detail="Rating must be 'up' or 'down'.")
+
+    os.makedirs("data", exist_ok=True)
+    feedback_entry = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "question": req.question,
+        "answer": req.answer,
+        "rating": req.rating.lower(),
+        "comments": req.comments or "",
+    }
+
+    try:
+        with open(os.path.join("data", "feedback.jsonl"), "a", encoding="utf-8") as f:
+            f.write(json.dumps(feedback_entry) + "\n")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to record feedback: {e}")
+
+    return FeedbackResponse(status="success", message="Feedback recorded. Thank you!")
+
+
+@app.get("/brands")
+def list_brands():
+    """List supported Indian and international brand name mappings."""
+    from drugs import ALIASES, BRAND_NOTES
+    return {
+        "total_brands_mapped": len(ALIASES),
+        "brand_mappings": ALIASES,
+        "clinical_notes": BRAND_NOTES
+    }
 
 if __name__ == "__main__":
     import uvicorn
