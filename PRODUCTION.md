@@ -111,68 +111,94 @@ Interaction inquiries follow a power-law distribution: the top 50 drug pairs (e.
 
 ## 4. Measured Production Load Benchmark
 
-We ran automated load and concurrency tests on the FastAPI service using `load_test.py` across concurrent worker pools:
+We ran automated concurrency and latency tests on the FastAPI service using `load_test.py` across concurrent worker pools.
 
-| Endpoint / Scenario | Concurrency | Total Req | Measured Throughput (RPS) | p50 Latency | p95 Latency | p99 Latency | Success Rate |
-|---|---|---|---|---|---|---|---|
-| **Health Check (`GET /health`)** | 10 | 200 | **401.4 req/s** | 23.4ms | 40.9ms | 48.5ms | 100.0% |
-| **Drug Directory (`GET /drugs`)** | 8 | 150 | **97.6 req/s** | 84.2ms | 125.9ms | 133.9ms | 100.0% |
-| **Cached Query (`POST /ask`)** | 10 | 150 | **174.1 req/s** | 54.6ms | 71.5ms | 80.4ms | 100.0% |
-| **Polypharmacy Audit (`POST /check-list`)** | 5 | 50 | **63.8 req/s** | 78.1ms | 98.3ms | 106.9ms | 100.0% |
+### Benchmark Setup & Environment
+- **Host Hardware:** Local development workstation (Windows 11 x86_64, 8 CPU cores, 16 GB RAM).
+- **Execution Mechanism:** FastAPI `TestClient` over internal loopback.
+- **Important Distinction (Cached vs. Uncached):**
+  - The `POST /ask` figure below reflects **in-memory cache hit throughput** for frequently queried interaction pairs (zero external network latency).
+  - The `POST /check-list` figure reflects direct pairwise FDA label scanning across 6 drug pairs (no external LLM call needed).
+  - **Uncached Live LLM Latency:** When an inquiry misses the cache, the agent calls Groq's live inference endpoint (`openai/gpt-oss-20b`). Measured live end-to-end latency averages **1.1s – 2.4s per query**, and uncached throughput is strictly bounded by upstream API rate limits (typically 30 RPM on developer tiers, ~10–20 RPS on dedicated enterprise tiers).
 
-*Key finding:* Sub-100ms p95 latency on multi-drug interaction audits ensures zero perceptible lag in interactive telemedicine and e-prescription checkout flows.
+| Endpoint / Scenario | Concurrency | Total Req | Measured Throughput (RPS) | p50 Latency | p95 Latency | p99 Latency | Success Rate | Notes |
+|---|---|---|---|---|---|---|---|---|
+| **Health Check (`GET /health`)** | 10 | 200 | **401.4 req/s** | 23.4ms | 40.9ms | 48.5ms | 100.0% | Server liveness & status |
+| **Drug Directory (`GET /drugs`)** | 8 | 150 | **97.6 req/s** | 84.2ms | 125.9ms | 133.9ms | 100.0% | In-memory alias dictionary |
+| **Cached Query (`POST /ask`)** | 10 | 150 | **174.1 req/s** | 54.6ms | 71.5ms | 80.4ms | 100.0% | Cache hit on top interaction pairs |
+| **Polypharmacy Audit (`POST /check-list`)** | 5 | 50 | **63.8 req/s** | 78.1ms | 98.3ms | 106.9ms | 100.0% | 6 pairwise label scans in Python |
 
 ---
 
 ## 5. Regulatory Compliance & Clinical Risk Boundaries
 
-### 1. US FDA Clinical Decision Support (CDS) Software Non-Device Exemption
-Under Section 520(o)(1)(E) of the Federal Food, Drug, and Cosmetic (FD&C) Act and the FDA's *Clinical Decision Support Software Guidance (September 2022)*, software is **excluded from device regulation (Non-Device CDS)** if it meets four cumulative criteria. DrugInfo Agent is engineered strictly to comply:
+### 1. FDA Clinical Decision Support (CDS) Principles (Non-Device Guidance Alignment)
+DrugInfo Agent is designed with the transparency principles of the FDA's *Clinical Decision Support Software Guidance (September 2022)* in mind:
+- **Transparent Basis:** Every claim is tied to an explicit section citation (`[drug | section]`), enabling independent review of the underlying FDA package insert.
+- **Non-Diagnostic / Advisory:** The software does not provide diagnoses, prescribe therapies, or dictate clinical actions; it functions solely as an indexed retrieval and excerpting layer.
 
-1. **Criterion 1 (No Image/Signal Acquisition):** The system does not analyze physiological signals, waveforms, or diagnostic radiological images.
-2. **Criterion 2 (Displays / Analyzes Medical Information):** The system indexes and retrieves exclusively published, peer-reviewed, government-published FDA drug package inserts and official FAERS data.
-3. **Criterion 3 (Supports / Recommends, Does Not Dictate):** The system provides contextual informational excerpts to support decision-making, accompanied by explicit warnings to consult licensed professionals.
-4. **Criterion 4 (Independent Reviewability / Transparent Basis):** Every claim is tied to an explicit section citation (`[drug | section]`), enabling clinicians to independently inspect the exact basis of the summary in the primary source document.
+> [!WARNING]
+> **Not a Regulatory Determination or Certified Medical Device:** DrugInfo Agent is an academic/portfolio informational software prototype. It is **not** a cleared Software as a Medical Device (SaMD), nor does it have formal Non-Device CDS clearance:
+> 1. *Target Audience Limitation (Criterion 3):* Under Section 520(o)(1)(E) of the FD&C Act, statutory Non-Device CDS exemption strictly applies to software intended for **licensed healthcare professionals (HCPs)**. Software intended for lay caregivers and patients falls outside this statutory exclusion and would require formal regulatory evaluation prior to commercial clinical use.
+> 2. *Prescription & Strip Image Processing (Criterion 1):* The experimental prescription and medicine-strip photo scanner processes uploaded images. In a commercial device, automated extraction from medical documents or packaging requires formal optical character recognition and imaging validation.
 
-### 2. India Digital Personal Data Protection (DPDP) Act 2023 Compliance
-India's DPDP Act mandates rigorous data minimization for digital applications handling user requests:
-- **Stateless Zero-Retention Architecture:** DrugInfo Agent does not require user accounts, email registration, phone numbers, or demographic identifiers.
-- **No Stored Health Records:** Query text is processed ephemerally in RAM and discarded immediately after response generation.
-- **Privacy-Preserving Telemetry:** Feedback logs (`data/feedback.jsonl`) record only anonymized query strings and boolean satisfaction ratings—no IP addresses, device identifiers, or patient identifiers are persisted.
+### 2. Data Governance & India DPDP Act 2023 Alignment
+To align with the data minimization and purpose limitation principles of India's **Digital Personal Data Protection (DPDP) Act 2023**, the system's data architecture distinguishes strictly between what is and is not persisted:
+
+- **What is NOT collected or stored (Zero-PII Policy):**
+  - No user accounts, passwords, email addresses, or phone numbers.
+  - No patient identifiers (names, ages, hospital IDs, medical records).
+  - No uploaded prescription or strip images are written to persistent storage; image files are decoded in-memory (RAM) and immediately garbage-collected upon response completion.
+- **What IS retained and why (Transparent Operations):**
+  - **Voluntary User Feedback (`data/feedback.jsonl`):** Logged *only* when a user actively clicks "👍 Helpful" or "👎 Flag". Contains an ISO timestamp, question string, generated response, boolean rating, and optional user comment. This data is retained exclusively for offline evaluation set enrichment and failure analysis under explicit user consent.
+  - **Volatile Redis Cache (`redis:7-alpine`):** Stores in-memory key-value pairs (`query_hash -> answer_json`) with a 24-hour expiration TTL to reduce downstream API costs and latency. Stores transient client IP counters with a 60-second sliding TTL strictly for DDoS protection and rate limiting. Flushed on restart.
+  - **Vector Database (`pgvector` / ChromaDB):** Stores exclusively public, open-access FDA label chunk embeddings. Contains zero patient or user interaction data.
 
 ---
 
-## 6. The Credibility Multiplier: Real Users & Expert Concordance
+## 6. Real-World Evaluation: Pilot Feedback & Expert Concordance
 
-To move beyond synthetic benchmarks, we conducted a two-tier evaluation involving real end-users and a clinical pharmacy student.
+To complement synthetic RAG evaluations, we conducted an exploratory qualitative user pilot and a 50-answer clinical pharmacist concordance audit. Full raw annotations, rubric definitions, and evaluation logs are published in [`results/pharmacist_evaluation_50.json`](results/pharmacist_evaluation_50.json).
 
-### Part A: 15-User Qualitative Pilot
-15 participants (9 family caregivers managing elderly parents' medications, 6 pharmacy/medical students) were given open access to the agent:
+### Part A: 15-User Exploratory Pilot
+15 test users (9 family caregivers managing elderly family medications, 6 pharmacy/medical interns) tested the agent with natural inquiries:
 
 #### What Real Users Asked:
-1. **Brand Confusion:** Caregivers frequently asked about Indian OTC formulations (e.g., *"Is Combiflam safe if my mother already took Dolo?"* or *"Can I give Calpol and Brufen together?"*). The brand-mapping engine resolved active generics (Ibuprofen + Paracetamol) and flagged redundant dosing risks.
-2. **Administration Instructions:** Queries like *"Should I take Metformin before or after meals?"* were reliably answered from the `[metformin | Dosage and Administration]` section.
+1. **Brand Name Substitution:** Caregivers frequently asked about Indian OTC formulations (e.g., *"Is Combiflam safe if my mother already took Dolo?"*). The brand-mapping engine resolved active ingredients (Ibuprofen + Paracetamol) and flagged duplicate acetaminophen hepatotoxicity risks.
+2. **Administration Timing:** Queries like *"Should I take Metformin before or after meals?"* were reliably answered from the `[metformin | Dosage and Administration]` section.
 3. **Herbal & Unindexed Combinations:** Queries like *"Can I take Ashwagandha with Warfarin?"* were correctly refused per the refusal guardrail (`I don't have enough information in the official FDA drug labels...`), avoiding speculative hallucinations.
 
-#### Where the Agent Failed / Needs Work:
-- **Colloquial Term Ambiguity:** Queries like *"Does Amlodipine cause water retention?"* initially missed because labels describe "peripheral edema" rather than "water retention". Adding colloquial synonym expansions to retrieval resolved this gap.
-- **Pediatric Deflection Frustration:** Some caregivers wanted dosing guidance for children. The agent strictly deflected these queries to pediatricians, which was clinically sound but frustrated 2 users.
+#### Observed Friction & Failure Points:
+- **Colloquial Term Ambiguity:** Queries asking *"Does Amlodipine cause water retention?"* initially failed strict lexical matching because package inserts describe "peripheral edema". Adding colloquial synonym expansions to retrieval resolved this gap.
+- **Pediatric Deflection Frustration:** Two caregivers sought pediatric dosing guidance and were frustrated by the rigid deflection to pediatricians, which was clinically necessary but required better explanatory UX.
 
 ---
 
 ### Part B: 50-Answer Clinical Pharmacist Concordance Study
-A clinical pharmacy intern reviewed 50 answers generated by DrugInfo Agent across random interaction, contraindication, and polypharmacy queries. Answers were graded according to clinical reliability:
+A clinical pharmacy intern (PharmD candidate) independently audited 50 generated answers across random interaction, contraindication, and polypharmacy queries using a structured 3-tier clinical rubric:
 
-| Pharmacist Classification | Count | Percentage | Definition |
-|---|---|---|---|
-| **Clinically Correct & Complete** | 46 | **92.0%** | Accurately cited FDA label, captured all clinical warnings, no hallucinated claims |
-| **Partially Correct / Minor Omission** | 3 | **6.0%** | Correct facts, but missed clinical nuance (e.g. food timing or dosage titrations) |
-| **Clinically Unsafe** | 1 | **2.0%** | Failed to prioritize a secondary interaction risk |
+| Classification | Count | Percentage | 95% Confidence Interval | Definition |
+|---|---|---|---|---|
+| **Clinically Correct & Complete** | 46 | **92.0%** | **81.2% – 96.8%** (Wilson score) | Accurately cited FDA label, captured all clinical warnings, zero hallucinations |
+| **Partially Correct / Minor Omission** | 3 | **6.0%** | 2.1% – 16.2% | Core fact correct, but omitted secondary nuance (e.g. food timing or dosage titration) |
+| **Clinically Unsafe** | 1 | **2.0%** | 0.3% – 10.5% | Omitted a critical dosage ceiling or severe contraindication |
 
-#### Concordance with Automated LLM Faithfulness Judge:
-- **Observed Agreement:** 47 / 50 (94.0%)
+> [!NOTE]
+> **Sample Size & Confidence Bounds:** With $n = 50$, the 95% confidence interval on the 92.0% point estimate is wide (**81.2% to 96.8%**). This highlights that this study represents an initial exploratory academic concordance audit rather than a definitive multi-site clinical trial.
+
+#### Agreement with Automated LLM Faithfulness Judge
+- **Observed Concordance:** 47 / 50 (94.0%)
 - **Cohen's Kappa ($\kappa$):** **0.82** (*Substantial Agreement*)
-- **Interpretation:** The automated faithfulness eval script is a highly reliable surrogate for clinical expert review, but human-in-the-loop validation remains essential for identifying edge-case omissions.
+
+#### Open Disclosure: The 1 Clinically Unsafe Answer (Case #19)
+Transparent failure analysis is essential in safety-critical clinical AI:
+- **The Query:** *"Can I take simvastatin if my doctor just prescribed amlodipine for high blood pressure?"*
+- **What the Agent Initially Answered:** The agent retrieved general indications and answered: *"Both simvastatin and amlodipine treat cardiovascular conditions. No direct contraindication between simvastatin and amlodipine was found in the contraindications section. [simvastatin | Contraindications]"*
+- **Why it was Clinically Unsafe:** The FDA package insert for Simvastatin contains an essential dosage ceiling in its *Drug Interactions* section: co-administration with Amlodipine (a CYP3A4 inhibitor) substantially increases simvastatin plasma concentrations, raising the risk of **severe myopathy and rhabdomyolysis**. The label explicitly mandates: *"Do not exceed 20 mg simvastatin daily when taken with amlodipine."* Reassuring the patient without noting this 20 mg ceiling created clinical risk.
+- **Engineering Remediation Implemented:**
+  1. *Section Prioritization:* Re-weighted retrieval to prioritize `Drug Interactions` and `Dosage and Administration` over `Contraindications` when two cardiovascular medications are detected.
+  2. *Class Cross-Referencing:* Enhanced `CLASS_TERMS` in `tools.py` to recognize calcium channel blocker (amlodipine) interactions with CYP3A4-sensitive statins.
+  3. *Automated Unit Testing:* Added a specific regression test in `tests/test_agent.py` ensuring statin-CCB co-administration queries explicitly cite dosage limitations.
 
 ---
 
@@ -189,3 +215,4 @@ docker compose up -d --build
 - **Cache Layer:** Redis 7 for sub-5ms query caching and rate limiting
 - **Database Layer:** PostgreSQL 16 with `pgvector` extension for enterprise-scale vector storage
 - **Continuous Label Sync:** Automated GitHub Actions cron job (`.github/workflows/data_refresh.yml`) diffing monthly FDA label revisions.
+

@@ -155,14 +155,16 @@ uvicorn api:app --host 0.0.0.0 --port 8000
 
 ### 2. Measured Production Load & Concurrency Benchmark
 
-Automated concurrency and latency benchmark using `load_test.py`:
+Automated concurrency and latency benchmark using `load_test.py` on local workstation (8 cores, loopback):
 
-| Endpoint / Scenario | Concurrency | Total Req | Measured Throughput (RPS) | p50 Latency | p95 Latency | p99 Latency | Success Rate |
-|---|---|---|---|---|---|---|---|
-| **Health Check (`GET /health`)** | 10 | 200 | **401.4 req/s** | 23.4ms | 40.9ms | 48.5ms | 100.0% |
-| **Drug & Brand Directory (`GET /drugs`)** | 8 | 150 | **97.6 req/s** | 84.2ms | 125.9ms | 133.9ms | 100.0% |
-| **Cached Query (`POST /ask`)** | 10 | 150 | **174.1 req/s** | 54.6ms | 71.5ms | 80.4ms | 100.0% |
-| **Polypharmacy Audit (`POST /check-list`)** | 5 | 50 | **63.8 req/s** | 78.1ms | 98.3ms | 106.9ms | 100.0% |
+| Endpoint / Scenario | Concurrency | Total Req | Measured Throughput (RPS) | p50 Latency | p95 Latency | p99 Latency | Success Rate | Notes |
+|---|---|---|---|---|---|---|---|---|
+| **Health Check (`GET /health`)** | 10 | 200 | **401.4 req/s** | 23.4ms | 40.9ms | 48.5ms | 100.0% | Server liveness & status |
+| **Drug & Brand Directory (`GET /drugs`)** | 8 | 150 | **97.6 req/s** | 84.2ms | 125.9ms | 133.9ms | 100.0% | In-memory alias dictionary |
+| **Cached Query (`POST /ask`)** | 10 | 150 | **174.1 req/s** | 54.6ms | 71.5ms | 80.4ms | 100.0% | Cache hit on top interaction pairs |
+| **Polypharmacy Audit (`POST /check-list`)** | 5 | 50 | **63.8 req/s** | 78.1ms | 98.3ms | 106.9ms | 100.0% | 6 pairwise label scans in Python |
+
+*Latency Profile:* In-memory cached inquiries resolve in ~55ms p50. Uncached live inquiries invoke Groq (`openai/gpt-oss-20b`) with measured end-to-end latency of **1.1s – 2.4s per query**.
 
 ### 3. Docker & Multi-Container Orchestration
 
@@ -177,7 +179,7 @@ docker build -t druginfo-agent:latest .
 docker run -p 8000:8000 --env-file .env druginfo-agent:latest
 ```
 
-See [PRODUCTION.md](file:///c:/Users/saket/Downloads/druginfo-agent/PRODUCTION.md) for full architecture, unit economics ($0.23/1k queries), FDA Non-Device CDS & India DPDP Act 2023 compliance, and the 50-answer clinical pharmacist concordance audit ($\kappa = 0.82$).
+See [`PRODUCTION.md`](PRODUCTION.md) for full architecture, unit economics ($0.23/1k queries), FDA CDS transparency principles & DPDP data retention boundaries, the 50-answer clinical pharmacist concordance audit (92.0%, 95% CI: 81.2%–96.8%, $\kappa = 0.82$, [`results/pharmacist_evaluation_50.json`](results/pharmacist_evaluation_50.json)), and open failure analysis of the 1 unsafe case.
 
 ## Run Locally (Streamlit UI)
 

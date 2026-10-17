@@ -137,4 +137,8 @@ def test_citation_verification_triggers_correction():
     model = Scripted(script=[call, bad_final, good_final])
     text, steps = agent.ask(agent.make_graph(model), "Can I take ibuprofen with warfarin?")
     assert "[warfarin | Drug Interactions]" in text
-
+def test_check_medication_list_tool(env):
+    out = tools.check_medication_list.invoke({"medications": "ibuprofen, warfarin, lisinopril"})
+    assert "Polypharmacy Interaction Audit" in out
+    assert "Flagged Interactions" in out
+    assert "Warfarin" in out
